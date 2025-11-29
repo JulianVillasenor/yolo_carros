@@ -1,0 +1,11 @@
+# data_license_plates.yaml
+# Configuración de dataset para YOLO (ultralytics)
+
+# Ruta raíz del dataset (relativa al archivo YAML)
+path: datasets/license_plates_yolo
+
+train: B:/unison/redes_neuronales/yolo_carros/datasets/license_plates_yolo/images/train
+val: B:/unison/redes_neuronales/yolo_carros/datasets/license_plates_yolo/images/val
+
+names:
+  0: plate
