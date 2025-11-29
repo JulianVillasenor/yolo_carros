@@ -1,0 +1,10 @@
+ultralytics
+opencv-python
+numpy
+matplotlib
+torch
+torchvision
+fastapi
+uvicorn
+jupyter
+notebook
