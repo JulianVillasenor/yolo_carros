@@ -1,0 +1,5 @@
+train: B:\unison\redes_neuronales\yolo_carros\datasets\car_detection_yolo\images\train
+val: B:\unison\redes_neuronales\yolo_carros\datasets\car_detection_yolo\images\val
+
+names:
+  0: car
