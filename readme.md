@@ -1,4 +1,5 @@
 # 🚗🔍 YOLO Carros y Placas
+Hecho por: Julian Patricio Villaseñor Ibarra y Leonardo Brambila Ayala
 
 Repositorio del proyecto de **Redes Neuronales** para entrenar dos modelos YOLOv8 y montar un pipeline de:
 
