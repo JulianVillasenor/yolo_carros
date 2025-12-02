@@ -22,7 +22,6 @@ slurm-*.out
 .DS_Store
 Thumbs.db
 
-*.pt
 *.onnx
 *.h5
 *.keras

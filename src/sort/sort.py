@@ -2,8 +2,6 @@
 sort.py
 -------
 
-Tracker sencillo tipo SORT (sin Kalman):
-
 - Mantiene una lista de "tracks" (carros).
 - En cada frame:
   - Hace matching de detecciones actuales con tracks anteriores usando IoU.
