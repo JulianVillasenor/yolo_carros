@@ -40,4 +40,4 @@ yolo_carros/
 ├─runs_plates/                 # runs de entrenamiento YOLO para placas
 ├─src/                         # código fuente del proyecto
 ├─videos/                      # videos de entrada para pruebas
-└─web/                         # base para futura demo web/ngrok
+└─web/                         # base web/ngrok
