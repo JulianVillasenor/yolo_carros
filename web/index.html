@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detección de Velocidad y Placas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #container { max-width: 900px; margin: 20px auto; }
+    #video-wrapper { position: relative; width: 100%; }
+    video#video { width: 100%; border-radius: 8px; background: #000; }
+    canvas#overlay { position: absolute; left: 0; top: 0; pointer-events: none; }
+    #controls { margin-top: 12px; }
+    #velocidad { font-size: 1.6rem; font-weight: 600; }
+    #placa { font-size: 1.2rem; color: #007bff; }
+    #alerta { color: red; font-weight: 700; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div id="container" class="container">
+    <div class="text-center">
+      <h1>Sistema de Control Vehicular</h1>
+      <p class="lead">Detecta velocidad y placas. Guarda infracciones.</p>
+    </div>
+    <div id="video-wrapper">
+  <video id="video" autoplay playsinline></video>
+  <canvas id="overlay"></canvas>
+</div>
+
+<div id="controls" class="text-center">
+  <button id="btnSwitch" class="btn btn-primary">Cambiar Cámara</button>
+  <p id="velocidad"></p>
+  <p id="placa"></p>
+  <p id="alerta"></p>
+</div>
+
+<script>
+const API_URL = "/procesar"; // mismo servidor (server.py) sirve API y web
+const INTERVAL_MS = 300;
+
+//const video = document.getElementById("video");
+//const overlay = document.getElementById("overlay");
+//const ctx = overlay.getContext("2d");
+//const btnSwitch = document.getElementById("btnSwitch");
+let video = null;
+let overlay = null;
+let ctx = null; // Canvas context
+let btnSwitch = null;
+//const fileVideo = document.getElementById("fileVideo");
+let currentStream = null;
+let facingMode = "environment";
+let useFile = false;
+
+function setCanvasSize() {
+  overlay.width = video.clientWidth;
+  overlay.height = video.clientHeight;
+}
+
+async function startCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+    currentStream = null;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode : facingMode} , audio: false});
+    currentStream = stream;
+    video.srcObject = stream;
+    //useFile = false;
+    video.onloadedmetadata = () => { setCanvasSize(); };
+    btnSwitch.innerText = (facingMode === "environment") ? "Cambiar a Cámara Frontal" : "Cambiar a Cámara Trasera";
+  } catch (err) {
+    alert("No se pudo iniciar la cámara: " + err.message);
+  }
+}
+
+// draw overlay boxes
+function drawBoxes(boxes, scaleX=1, scaleY=1) {
+  ctx.clearRect(0,0,overlay.width, overlay.height);
+  boxes.forEach(obj => {
+    const b = obj.box; // [x1,y1,x2,y2] relative to original frame size we sent
+    // Because we asked canvas to send scaled-down frames, coordinates need mapping.
+    // We assume the frame we sent had the same pixel size as overlay width/height for simplicity.
+    const x1 = b[0] / obj.frame_w * overlay.width;
+    const y1 = b[1] / obj.frame_h * overlay.height;
+    const x2 = b[2] / obj.frame_w * overlay.width;
+    const y2 = b[3] / obj.frame_h * overlay.height;
+    const w = x2 - x1, h = y2 - y1;
+    ctx.strokeStyle = obj.infraccion ? "red" : "lime";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x1, y1, w, h);
+    // label
+    let label = `ID ${obj.track_id} ${obj.speed_kmh} km/h`;
+    if (obj.plate) label += ` | ${obj.plate}`;
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(x1, y1-22, Math.max(120, ctx.measureText(label).width+10), 22);
+    ctx.fillStyle = "white";
+    ctx.font = "16px Arial";
+    ctx.fillText(label, x1+4, y1-6);
+  });
+}
+
+async function sendFrameAndGetDetections() {
+  // draw small frame to a hidden canvas to reduce payload
+  const w = 640; // resolution sent (adjust to speed)
+  const h = Math.round(video.videoHeight * (w / video.videoWidth));
+  // create offscreen canvas
+  const off = document.createElement("canvas");
+  off.width = w; off.height = h;
+  const offCtx = off.getContext("2d");
+  offCtx.drawImage(video, 0, 0, w, h);
+  const dataUrl = off.toDataURL("image/jpeg", 0.7);
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ imagen: dataUrl })
+    });
+    if (!res.ok) throw new Error("Error del servidor: " + res.status);
+    const j = await res.json();
+    // j.boxes: list of {track_id, box, speed_kmh, plate}
+    // We need to augment each box with the frame width/height we sent so client can scale
+    const augmented = j.boxes.map(b => ({...b, frame_w: w, frame_h: h, infraccion: j.infraccion}));
+    // update UI
+    document.getElementById("velocidad").innerText = `Velocidad: ${j.velocidad_max} km/h (límite ${j.limite})`;
+    document.getElementById("placa").innerText = augmented.length && augmented[0].plate ? `Placa: ${augmented[0].plate}` : "";
+    document.getElementById("alerta").innerText = j.infraccion ? "¡¡EXCESO DE VELOCIDAD!!" : "";
+    drawBoxes(augmented);
+  } catch (err) {
+    console.log("fetch error:", err);
+  }
+}
+
+async function loop() {
+  if (video.readyState >= 2 && (video.videoWidth > 0 && video.videoHeight > 0)) {
+    setCanvasSize();
+    await sendFrameAndGetDetections();
+  }
+  setTimeout(loop, INTERVAL_MS);
+}
+
+window.onload = async () => {
+  video = document.getElementById("video");
+  overlay = document.getElementById("overlay");
+  btnSwitch = document.getElementById("btnSwitch");
+  ctx = overlay.getContext("2d"); // Ahora 'overlay' no será null
+  
+  await startCamera();
+  setTimeout(loop, 500);
+
+  btnSwitch.addEventListener("click", async () => {
+    facingMode = (facingMode === "environment") ? "user" : "environment";
+    await startCamera();
+  });
+
+};
+</script>
+</body>
+</html>
