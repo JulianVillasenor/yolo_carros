@@ -31,6 +31,17 @@ def get_project_root() -> Path:
 
 
 def parse_args():
+    """
+    Docstring for parse_args
+    
+    Configura y procesa los argumentos de línea de comandos para el entrenamiento.
+
+    Permite al usuario sobrescribir parámetros clave como la ruta del dataset,
+    el modelo base, las épocas, el tamaño del batch y el tamaño de la imagen.
+
+    Returns:
+        argparse.Namespace: Objeto con los argumentos procesados.
+    """
     parser = argparse.ArgumentParser(
         description="Entrenar modelo YOLO para detección de CARROS."
     )

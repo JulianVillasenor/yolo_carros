@@ -52,6 +52,14 @@ def get_default_data_yaml(project_root: Path) -> Path:
 
 
 def parse_args():
+    """
+    Docstring for parse_args
+    Configura y procesa los argumentos de línea de comandos para el entrenamiento.
+
+    Returns:
+        argparse.Namespace: Objeto con los argumentos pasados por el usuario.
+    
+    """
     parser = argparse.ArgumentParser(
         description="Entrenar modelo YOLO para detección de placas."
     )

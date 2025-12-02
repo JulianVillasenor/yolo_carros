@@ -39,6 +39,11 @@ def get_project_root() -> Path:
 
 
 def parse_args():
+    """
+    Docstring for parse_args
+    Calcula y devuelve la ruta absoluta del directorio raíz del proyecto,
+    asumiendo que este script está anidado en una subcarpeta
+    """
     parser = argparse.ArgumentParser(
         description="Pipeline de detección de carros + placas + OCR + tracking."
     )

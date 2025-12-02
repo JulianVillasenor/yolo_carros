@@ -31,7 +31,18 @@ import shutil
 
 
 def yolo_from_xyxy(xmin, ymin, xmax, ymax, img_w, img_h):
-    """Convierte bbox en formato VOC (xmin, ymin, xmax, ymax) a YOLO normalizado."""
+    """
+    Docstring for yolo_from_xyxy
+    
+    :param xmin: Coordenada X mínima en píxeles.
+    :param ymin: Coordenada Y mínima en píxeles.
+    :param xmax: Coordenada X máxima en píxeles.
+    :param ymax: Coordenada Y máxima en píxeles.
+    :param img_w: Ancho total de la imagen en píxeles.
+    :param img_h: Alto total de la imagen en píxeles.
+
+    Convierte bbox en formato VOC (xmin, ymin, xmax, ymax) a YOLO normalizado.
+    """
     x_center = (xmin + xmax) / 2.0 / img_w
     y_center = (ymin + ymax) / 2.0 / img_h
     w = (xmax - xmin) / img_w

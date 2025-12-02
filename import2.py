@@ -1,16 +1,41 @@
+"""
+Docstring for import2
+Es es un script para poder descargar el dataset 'car-object-detection' desde Kaggle y tambien para poder 
+organizar los archivos relevantes como las imagenes del entrenamiento dentro de un directorio
+"""
+
 import kagglehub
 import shutil
 from pathlib import Path
 
 
+
 def safe_rmtree(path: Path):
+    """
+    Docstring for safe_rmtree
+    
+    :param path: Description
+    :type path: Path
+    
+    Elimina un directorio y todo su contenido, solamente si el directorio existe 
+    """
     if path.exists():
         shutil.rmtree(path)
 
 
 def find_dir(base: Path, name: str) -> Path | None:
     """
+    Docstring for find_dir
+    
+    :param base: Description
+    :type base: Path El directorio en donde comenzara la busqueda
+    :param name: Description
+    :type name: str NOmbre exacto a buscar
+    :return: Description
+    :rtype: Path | None
+
     Busca recursivamente un directorio con nombre exacto `name`.
+
     """
     for p in base.rglob("*"):
         if p.is_dir() and p.name == name:

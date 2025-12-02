@@ -19,13 +19,23 @@ import numpy as np
 
 def iou(boxA, boxB) -> float:
     """
+    Docstring for iou
+    
+    :param boxA: Primera caja delimitadora.
+    :param boxB: Segunda caja delimitadora.
+    :return: Description
+    :rtype: Valor IoU entre 0.0 y 1.0.
     Calcula IoU entre dos cajas [x1, y1, x2, y2].
+    Las cajas deben estar en formato [x1, y1, x2, y2]
     """
+    
+    #Coordenadas del rectángulo de intersección
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
     xB = min(boxA[2], boxB[2])
     yB = min(boxA[3], boxB[3])
 
+    # Area de intersección
     inter_w = max(0.0, xB - xA)
     inter_h = max(0.0, yB - yA)
     inter_area = inter_w * inter_h
@@ -39,6 +49,7 @@ def iou(boxA, boxB) -> float:
     if boxA_area <= 0 or boxB_area <= 0:
         return 0.0
 
+    # Firmula: Area de Interseccion / (Area A + Area B - Area de Interseccion)
     return inter_area / float(boxA_area + boxB_area - inter_area)
 
 
@@ -50,6 +61,7 @@ class Track:
     - cuántos frames lleva sin ser visto (misses)
     - cuántos hits ha tenido (hits)
     """
+    # Contador de ID estático para asegurar IDs unicos
     _next_id = 0
 
     def __init__(self, bbox):
@@ -57,11 +69,19 @@ class Track:
         self.id = Track._next_id
         Track._next_id += 1
 
+        # Almacena la bbox como un array de NumPy
         self.bbox = np.array(bbox, dtype=float)
         self.misses = 0
         self.hits = 1
 
     def update(self, bbox):
+        """
+        Docstring for update
+        
+        :param self: Description
+        :param bbox: Description
+        Actualiza la posición del track con una nueva detección emparejada (hit)
+        """
         self.bbox = np.array(bbox, dtype=float)
         self.misses = 0
         self.hits += 1
@@ -84,6 +104,15 @@ class Sort:
     """
 
     def __init__(self, max_age=5, iou_threshold=0.3):
+        """
+        Docstring for __init__
+        
+        :param self: D
+        :param max_age: Número máximo de fotogramas que un track puede estar
+                           "perdido" antes de ser eliminado.
+        :param iou_threshold: mbral IoU mínimo requerido para considerar
+                                   que una detección coincide con un track.
+        """
         self.max_age = max_age
         self.iou_threshold = iou_threshold
         self.tracks: list[Track] = []

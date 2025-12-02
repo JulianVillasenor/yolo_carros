@@ -17,6 +17,7 @@ import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+# Proporción de datos destinados al conjunto de entrenamiento.
 TRAIN_RATIO = 0.8
 
 # Mapeo de nombres de clase a ID (todas son clase 0 = "plate")
@@ -32,17 +33,35 @@ CLASS_NAME_TO_ID = {
 
 
 def get_project_root() -> Path:
+    """
+    Docstring for get_project_root
+    
+    :return: Description
+    :rtype: Path
+    Calcula y devuelve la ruta absoluta del directorio raíz del proyecto.
+    """
     return Path(__file__).resolve().parent.parent
 
 
 def parse_voc_xml(xml_path: Path):
+    """
+    Docstring for parse_voc_xml
+    
+    :param xml_path: Description
+    :type xml_path: Path
+
+    Parsea un archivo de anotación XML en formato Pascal VOC y extrae las
+    bounding boxes, convirtiéndolas al formato normalizado de YOLO.
+    """
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
+    #Obtener dimensiones de la imagen
     size = root.find("size")
     w = float(size.find("width").text)
     h = float(size.find("height").text)
 
+    #Iterar sobre los objetos detecciones
     boxes = []
     for obj in root.findall("object"):
         name_tag = obj.find("name")
@@ -51,6 +70,7 @@ def parse_voc_xml(xml_path: Path):
 
         class_name = name_tag.text.strip()
 
+        # Mapear nombre de clase a ID
         if class_name in CLASS_NAME_TO_ID:
             class_id = CLASS_NAME_TO_ID[class_name]
         else:
@@ -62,6 +82,7 @@ def parse_voc_xml(xml_path: Path):
         if b is None:
             continue
 
+        # Coordenadas de la Bounding Box en formato pixel
         xmin = float(b.find("xmin").text)
         ymin = float(b.find("ymin").text)
         xmax = float(b.find("xmax").text)
